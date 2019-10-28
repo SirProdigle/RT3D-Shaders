@@ -72,12 +72,27 @@ SamplerState g_sampler;
 // The vertex shader entry point. This function takes a single vertex and transforms it for the rasteriser.
 void VSMain(const VSInput input, out PSInput output)
 {
-	output.pos = mul(input.pos, g_WVP);
+	float4 offset = 0;
+	offset.y = sin(g_frameCount * 0.1 + input.pos.x );
+	offset.x = cos(g_frameCount * 0.1 + input.pos.y );
+	output.pos = mul(input.pos + offset , g_WVP);
 	output.colour = input.colour;
+	output.normal = input.normal;
 }
 
 // The pixel shader entry point. This function writes out the fragment/pixel colour.
 void PSMain(const PSInput input, out PSOutput output)
 {
-	output.colour = input.colour;	// 'return' the colour value for this fragment.
+	float4 endColor;
+	for (int i = 0; i < g_numLights; i++)
+	{
+		float3 lightDir = g_lightDirections[i];
+		float3 normal = input.normal;
+		float intensity = cos(dot(normal, lightDir));
+		float4 lightColor = float4(g_lightColours[i].rgb, 1) * intensity;
+		lightColor.a = 1;
+		endColor += lightColor;
+	}
+	endColor.a = 1;
+	output.colour = endColor;	// 'return' the colour value for this fragment.
 }
