@@ -75,8 +75,8 @@ void VSMain(const VSInput input, out PSInput output)
 	float4 offset = 0;
 	float2 uv = ((input.pos.xz + 512) / 1024);
 	uv.y = 1 - uv.y;
-	offset.y = sin(g_frameCount * 0.1 + input.pos.x );
-	offset.x = cos(g_frameCount * 0.1 + input.pos.y );
+	//offset.y = sin(g_frameCount * 0.1 + input.pos.x );
+	//offset.x = cos(g_frameCount * 0.1 + input.pos.y );
 	output.mat = g_materialMap.SampleLevel(g_sampler,uv,0);
 	output.pos = mul(input.pos + offset , g_WVP);
 	output.colour = input.colour;
@@ -94,13 +94,13 @@ void PSMain(const PSInput input, out PSOutput output)
 	endColor = lerp(endColor, g_texture1.Sample(g_sampler, uv), mat.g);
 	endColor = lerp(endColor, g_texture2.Sample(g_sampler, uv), mat.b);
 	
-	float4 finalLight;
+	float4 finalLight = float4(0, 0, 0, 1);
 	//Lighting 
 	for (int i = 0; i < g_numLights; i++)
 	{
 		float3 lightDir = g_lightDirections[i];
 		float3 normal = input.normal;
-		float intensity = cos(dot(normal, lightDir));
+		float intensity = (dot(normal, lightDir));
 		float4 lightColor = float4(g_lightColours[i].rgb, 1) * intensity;
 		lightColor.a = 1;
 		finalLight += lightColor;
@@ -109,5 +109,5 @@ void PSMain(const PSInput input, out PSOutput output)
 	
 
 
-	output.colour = endColor * finalLight * 2.7;	// 'return' the colour value for this fragment.
+	output.colour = endColor * finalLight/* * 2.7*/;	// 'return' the colour value for this fragment.
 }
